@@ -1,9 +1,11 @@
 //WebRecommend.js
 //Owen Chen
 
-//Tool to add websites you like into a json file. Applies 
+//Tool to add websites you like into a json database file. Applies 
 //Spaced repitition to generate websites that you like and 
 //Learns based on your quality of response
+//0 = Love it, show it more. 5 = hate it push it back. 
+//
 
 
 //CHANGING DATE TYPES TO INTS
@@ -13,14 +15,17 @@ var readline = require('readline');
 
 var siteFile = 'sites.json',
     quizList = [],
-    quizTimer = 4000,
+    quizTimer = 500,
     today = 0, //ADD IN DATE FUNCTIONALITY LATER
     topicDict = [],
-    sites = [], //All of the sites of the CURRENT topic 
+    sites = [], //All of the sites of the CURRENT topic. Each an object 
+
+    newSiteObjArr = []; //same as sites array above, but with site objects
     siteJSONs = {}, //All of the JSON decks for each category
     curSiteKey = 0;
 
     cardCounter = 0;
+    curKeyIndex = []; //Get the key name for index _ of this topic
 
 // today.setHours(0,0,0,0);
 
@@ -62,7 +67,40 @@ readsiteFile(siteFile);
 function pickTopic(line){
   console.log(line);
   // console.log(topicDict[line]);
-  sites = topicDict[line];
+
+  //Populating new sites array with objects
+  var sites = topicDict[line];
+  console.log(sites);
+  //NEED TO MAKE OBJECTS TO POPULATE SITES ARRAY
+  //------------------------------------
+ //Now the website is newSiteObjArr.name, and it has properties
+
+  for (var i in sites){
+    var newSiteObj = {
+      name: sites[i]
+      }
+
+    newSiteObjArr.push(newSiteObj);
+  }
+
+  // for (var i in sites){
+  //   var siteTitle = sites[i];
+
+  //   sites[i] = new Object()
+  //   sites[i].name = "Owen"; 
+  //   console.log(sites[i]);
+  //   // sites[i] = var siteKey = new Object();
+  // }
+
+  //---------------------------------
+
+  // console.log(sites);
+
+  // console.log("All sites newwww " + sites);
+
+  sitesCount = newSiteObjArr.length;
+
+  console.log("Sites dictionary length!!! " + sitesCount);
 
   siteJSONs[String(line) + ".json"] = sites;
   // console.log(siteJSONs);
@@ -70,7 +108,7 @@ function pickTopic(line){
   console.log(curSiteKey + " This is curSite Key");
 
 
-  sitesCount = sites.length;
+
   if (sitesCount){
     console.log("You have " + sitesCount + " of sites here");
     getUserInput("Press enter to start your recommendations..",startStopQuiz);
@@ -91,14 +129,17 @@ function getUserInput(question, next, card) {
     rl.close();
 
     if (!card) {
+
       console.log("Goes into the not card");
       next(line);
     } else {
+
       console.log("goes into next");
       next(line, card);
     }
   });
 }
+
 
 function startStopQuiz(line) {
 
@@ -110,8 +151,9 @@ function startStopQuiz(line) {
     console.log("countttttt " + count);
     if (count) {
       cardCounter = 0;
-      console.log("Goinginto getNextCard " + sites[0]);
-      getNextCard(sites[0]);
+
+      console.log("Going into getNextCard " + newSiteObjArr[0].name);
+      getNextCard(newSiteObjArr[0]);
       
     }
   }
@@ -135,7 +177,7 @@ function cardQuizCount() {
 function getNextCard(card) {
     // console.log(jsonFile);
     // console.log(line);
-    console.log(card + " this is the card");
+    // console.log(card.name + " this is the card");
     if (!card) {
       console.log("no card, write siteFile");
       writesiteFile(curSiteKey); //Save to file
@@ -150,6 +192,7 @@ function getNextCard(card) {
     }
     //Set Defaults if new card. We need each card to have it's own
     //Properties somehow
+    //Javascript objects have attributes. var card = {nextDate: 0}
     //DEBUG THIS
    //----------------------------
     if (!card.nextDate) { card.nextDate = today; console.log(card.nextDate); }
@@ -164,7 +207,7 @@ function getNextCard(card) {
     // var nextDate = new Date(card.nextDate); //convert to comparable date type
     var nextDate = card.nextDate; //convert to comparable date type
 
-    console.log(nextDate + " the next Date");
+    // console.log(nextDate + " the next Date");
     if (nextDate <= today) {
       quizCard(card);
     } else {
@@ -176,9 +219,9 @@ function getNextCard(card) {
 }
 
 function quizCard(card) {
-    console.log("Side 1: " + card);
+    console.log("Site: " + card.name);
     setTimeout(function() {
-      console.log("Side 2: " + card);
+      console.log("How did you like it?");
       getUserInput("Grade> ", updateCard, card);
     }, quizTimer);
 }
@@ -188,7 +231,7 @@ function updateCard(line, card) {
   if (grade <= 5 && grade >= 0) {
     calcIntervalEF(card, grade);
     cardCounter++;
-    getNextCard(sites[cardCounter]);
+    getNextCard(newSiteObjArr[cardCounter]);
 
   } else { //Bad input
     getUserInput("Please enter 0-5 for... " + card.side2 + ": ", updateCard, card);
@@ -197,8 +240,9 @@ function updateCard(line, card) {
 
 // Briefly the algorithm works like this:
 // EF (easiness factor) is a rating for how difficult the card is.
-// Grade: (0-2) Set reps and interval to 0, keep current EF (repeat card today)
-//        (3)   Set interval to 0, lower the EF, reps + 1 (repeat card today)
+// EF = E-Factor. Dislike factor. Higher the factor the less you will see it
+// Grade: (0-3) 
+//        ()   
 //        (4-5) Reps + 1, interval is calculated using EF, increasing in time.
 function calcIntervalEF(card, grade) {
   var oldEF = card.EF,
@@ -206,13 +250,10 @@ function calcIntervalEF(card, grade) {
       // nextDate = new Date(today);
       nextDate = today; 
 
-  if (grade < 3) {
-    card.reps = 0;
-    card.interval = 0;
-  } else {
 
+  if (grade >= 0 && grade <=5){ //Dont repeat based on the grade
     newEF = oldEF + (0.1 - (5-grade)*(0.08+(5-grade)*0.02));
-    if (newEF < 1.3) { // 1.3 is the minimum EF
+    if (newEF < 1.3) { // 1.3 is the minimum E-F
       card.EF = 1.3;
     } else {
       card.EF = newEF;
@@ -233,18 +274,13 @@ function calcIntervalEF(card, grade) {
     }
   }
 
-  if (grade === 3) {
-    card.interval = 0;
-  }
-
-  // nextDate.setDate(today.getDate() + card.interval); 
   nextDate = today + card.interval;
   card.nextDate = nextDate;
 }
 
 function writesiteFile(siteFile) {
-  fs.writeFile(siteFile, JSON.stringify(topicDict[curSiteKey], null, 2), function(err) {
+  fs.writeFile(siteFile, JSON.stringify(newSiteObjArr, null, 2), function(err) {
     if (err) throw err;
-    console.log("\nProgress saved back to file.");
+    console.log("\nProgress saved back to file." + siteFile);
   });
 }
