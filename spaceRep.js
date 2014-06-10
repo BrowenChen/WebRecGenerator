@@ -1,14 +1,50 @@
-//WebRecommend.js
-//Owen Chen
+/** 
+  WebRecommend.js
+   - Owen Chen
+  -----------------------
+  Description:
+  Tool to add websites you like into a json database file. Applies 
+  Spaced repitition to generate websites that you like and learns 
+  based on your quality of response. 
 
-//Tool to add websites you like into a json database file. Applies 
-//Spaced repitition to generate websites that you like and 
-//Learns based on your quality of response
-//0 = Love it, show it more. 5 = hate it push it back. 
-//
+  0 = Love it, show it more. 5 = hate it push it back. 
+
+  Brief outline of SM-2 SR algorithm:
+  1. Split into smallest possible items. 
+  2. E-Factor of 2.5 initialized to all variables. 
+  3. OF Matrix and E-Factor categories. Algorithm:
+          OF(1,EF) = 4
+          for n > 1 OF(n, EF) := EF
+
+          Where OF(n, EF) - optimal factor for n-th repitition  and EF 
+  4. OF Matrix to determine inter-repetition intervals. 
+          I(n, EF) = OF( n, EF) * I(n-1, EF)
+          ... Code Onbline
+  5. Assess quality of repetition responses in 0-5 scale
+  6. Modify E-factor According to formula
+  7. After each rep, modify relevant entry of OF matrix. 
+  8. if quality respobse is lower than 3 start repetition for the item from the beginning with no E-factor change
+  9. Repeat all items under four in quality assement.
 
 
-//CHANGING DATE TYPES TO INTS
+  -V 1.0
+  Algorithm based off SuperMemo SM-2 Learning Algorithm as described:
+  http://www.supermemo.com/english/ol/sm2.htm
+
+  Changes to the algorithm:
+  - E-Factor (easiness factor) changed to hardness factor. The higher 
+  q, the less likely you'd want to see it again. Changes to dislike
+  factor. 
+
+  -webSite files are seperated by topic. Spaced repitition applies to the
+  sites inside each topic, new JSON file with attributes created with 
+  each topic.
+
+  Updates needed:
+  -Implement checkFileExists
+  -Add in Date Functionality
+
+**/
 
 var fs = require('fs');
 var readline = require('readline');
@@ -29,6 +65,7 @@ var siteFile = 'sites.json',
 
 // today.setHours(0,0,0,0);
 
+//Begin welcome screen
 console.log("Welcome to your personalized web generator!\n" +
   "After each site respond as follows:\n" +
   "(0) Absolutely friggin' love it \n" +
@@ -38,15 +75,29 @@ console.log("Welcome to your personalized web generator!\n" +
   "(4) Ok, I just wasted 5 minutes of my life\n" +
   "(5) Never take me here again.");
 
+/*
+  reads the file and parses JSON file into js readable variable.
+  Stores the variable 
+
+  @pmethod readsiteFile
+  @param {String} file
+  @return {Object} variable dictionary of JSON. 
+
+*/
 function readsiteFile(file) {
   fs.readFile(file, function(err, data) {
     if (err) throw err;
     topicDict = JSON.parse(data);
+
+
+
+    //Possibily Split this into a new function
     //Count the number of topics
     // console.log(Object.keys(topicDict));
     var subjects = Object.keys(topicDict); //Number of subjects
     var subCount = subjects.length; //Subject Count
     // console.log(subCount);
+
 
     if (subCount) {
       console.log("There are " + subCount + " site topics you can pick");
@@ -63,7 +114,16 @@ function readsiteFile(file) {
 readsiteFile(siteFile);
 
 
-//Chose which topic to start generator
+/*
+  pick the Topic from root bookmark JSON file sites.json. This will create new 
+  objects for each of the websites under Topic, and assign them attributes for 
+  the Algorithm.
+
+  @methodName pickTopic
+  @param {String} user Inputed string
+  @return 
+
+*/
 function pickTopic(line){
   console.log(line);
   // console.log(topicDict[line]);
@@ -121,6 +181,17 @@ function pickTopic(line){
 
 }
 
+
+/*
+  get's User Input. Takes in a question to prompt, and a next function. 
+
+  @method getUserInput
+  @param {String} String prompt
+  @param {Function} Function for next
+  @param {String} What is the card 
+  @return 
+
+*/
 function getUserInput(question, next, card) {
   var rl = readline.createInterface(process.stdin, process.stdout);
   rl.setPrompt(question);
@@ -141,6 +212,13 @@ function getUserInput(question, next, card) {
 }
 
 
+/*
+  Starts the Quizzing. Calls getNextCard
+
+  @method startStopQuix
+  @param {String} takes in user input
+  @return
+*/
 function startStopQuiz(line) {
 
   console.log("Start STOP quiz line " + line);
@@ -159,7 +237,13 @@ function startStopQuiz(line) {
   }
 }
 
-//Amount of sites up for quizzing today
+/*
+  Returns the amount of website that is due today.
+
+  @method cardQuizCount()
+  @param 
+  @return {Int} the Count
+*/
 function cardQuizCount() {
   var count = 0;
   for (var i=0; i<sites.length; i++) {
@@ -174,6 +258,13 @@ function cardQuizCount() {
   return count;
 }
 
+/*
+  Get the next card. Calls cardQuizCount and getUserInput
+
+  @method getNextCard()
+  @param {String} card name
+  @return 
+*/
 function getNextCard(card) {
     // console.log(jsonFile);
     // console.log(line);
@@ -218,6 +309,14 @@ function getNextCard(card) {
     }
 }
 
+/*
+
+  Assesses the quality of a website's likeability according to the user
+
+  @method quizCard
+  @param {String} card name
+  @return 
+*/
 function quizCard(card) {
     console.log("Site: " + card.name);
     setTimeout(function() {
@@ -226,6 +325,13 @@ function quizCard(card) {
     }, quizTimer);
 }
 
+/*
+  Update card attributes for the website.
+
+  @method updateCard
+  @param {String} user input, card name
+  @return 
+*/
 function updateCard(line, card) {
   var grade = parseInt(line, 10);
   if (grade <= 5 && grade >= 0) {
@@ -238,12 +344,13 @@ function updateCard(line, card) {
   }
 }
 
-// Briefly the algorithm works like this:
-// EF (easiness factor) is a rating for how difficult the card is.
-// EF = E-Factor. Dislike factor. Higher the factor the less you will see it
-// Grade: (0-3) 
-//        ()   
-//        (4-5) Reps + 1, interval is calculated using EF, increasing in time.
+
+/*
+  Brief description of SM-2 Algorithm. EF (easiness factor is rating for how hard)
+  This is changed to dislike factor.
+  Grade on scale of 0-5.
+  Update attributes according to spaced repitition. 
+*/
 function calcIntervalEF(card, grade) {
   var oldEF = card.EF,
       newEF = 0,
@@ -278,6 +385,14 @@ function calcIntervalEF(card, grade) {
   card.nextDate = nextDate;
 }
 
+
+/*
+  Writes back to specified JSON file.
+
+  @method writesiteFile 
+  @param {String} name of JSON file you wanna write into
+
+*/
 function writesiteFile(siteFile) {
   fs.writeFile(siteFile, JSON.stringify(newSiteObjArr, null, 2), function(err) {
     if (err) throw err;
