@@ -21,7 +21,7 @@
     "prevDate": 0,
     "interval": 1,
     "reps": 1,
-    "EF": 2.1799999999999997
+    "EF": 2.5
   },
   {
     "name": "http://news.yahoo.com/sports/",
@@ -29,7 +29,7 @@
     "prevDate": 0,
     "interval": 1,
     "reps": 1,
-    "EF": 2.36
+    "EF": 2.6
   },
   {
     "name": "http://grantland.com",
@@ -37,7 +37,7 @@
     "prevDate": 0,
     "interval": 1,
     "reps": 1,
-    "EF": 2.36
+    "EF": 2.5
   },
   {
     "name": "http://sportsillustrated.cnn.com/",
@@ -45,6 +45,6 @@
     "prevDate": 0,
     "interval": 1,
     "reps": 1,
-    "EF": 2.1799999999999997
+    "EF": 2.36
   }
 ]
