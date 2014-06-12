@@ -67,6 +67,8 @@ var siteFile = 'sites.json',
     cardCounter = 0;
     curKeyIndex = []; //Get the key name for index _ of this topic
 
+    todaySiteCountTotal = 0;
+
 // today.setHours(0,0,0,0);
 
 //Begin welcome screen
@@ -79,30 +81,22 @@ console.log("Welcome to your personalized web generator!\n" +
   "(4) Ok, I just wasted 5 minutes of my life\n" +
   "(5) Never take me here again.");
 
-/*
-  reads the file and parses JSON file into js readable variable.
-  Stores the variable 
-
-  @pmethod readsiteFile
-  @param {String} file
-  @return {Object} variable dictionary of JSON. 
-
-*/
-function readsiteFile(file) {
-  fs.readFile(file, function(err, data) {
-    if (err) throw err;
-    topicDict = JSON.parse(data);
 
 
+function startTopicFile(file){
 
+    console.log(file);
+    console.log(checkExists(file));
+    topicDict = JSON.parse(fs.readFileSync(file));
+
+    // topicDict = JSON.parse(file);
+    console.log("passed JSON parse");
     //Possibily Split this into a new function
     //Count the number of topics
     // console.log(Object.keys(topicDict));
     var subjects = Object.keys(topicDict); //Number of subjects
     var subCount = subjects.length; //Subject Count
     // console.log(subCount);
-
-
     if (subCount) {
       console.log("There are " + subCount + " site topics you can pick");
       console.log("Here are the options: ");
@@ -112,10 +106,8 @@ function readsiteFile(file) {
       console.log("Error or something");
     }
 
-  });
-}
 
-readsiteFile(siteFile);
+}
 
 
 /*
@@ -132,20 +124,39 @@ function pickTopic(line){
   console.log(line);
   // console.log(topicDict[line]);
 
+  //Check if JSON data exists or not
+  curSiteKey = String(line) + ".json";
+  var exists = checkExists(curSiteKey);
+  var sites = 0;
+  if (exists == true){
+    newSiteObjArr = readsiteFile(curSiteKey);
+    console.log("This JSON already exists, overwrite newSiteObjArr");
+    console.log(newSiteObjArr.length);
+    // sitesCount = newSiteObjArr.length;
+
+  } else { //Doesn't exist, make new
+    sites = topicDict[line];
+
+    newSiteObjArr = []; //Empty out the array
+    for (var i in sites){
+      var newSiteObj = {
+        name: sites[i]
+        }
+
+      newSiteObjArr.push(newSiteObj);
+      // sitesCount = newSiteObjArr.length;
+
+    }
+
+    
+  }
+
   //Populating new sites array with objects
-  var sites = topicDict[line];
-  console.log(sites);
+  // console.log(sites);
   //NEED TO MAKE OBJECTS TO POPULATE SITES ARRAY
   //------------------------------------
  //Now the website is newSiteObjArr.name, and it has properties
 
-  for (var i in sites){
-    var newSiteObj = {
-      name: sites[i]
-      }
-
-    newSiteObjArr.push(newSiteObj);
-  }
 
   // for (var i in sites){
   //   var siteTitle = sites[i];
@@ -230,6 +241,7 @@ function startStopQuiz(line) {
     return;
   } else {
     var count = sitesCount;
+    todaySiteCountTotal = count;
     console.log("countttttt " + count);
     if (count) {
       cardCounter = 0;
@@ -242,7 +254,7 @@ function startStopQuiz(line) {
 }
 
 /*
-  Returns the amount of website that is due today.
+  Returns the amount of website that is due today. Fix this
 
   @method cardQuizCount()
   @param 
@@ -272,11 +284,12 @@ function cardQuizCount() {
 function getNextCard(card) {
     // console.log(jsonFile);
     // console.log(line);
-    // console.log(card.name + " this is the card");
-    if (!card) {
+    console.log(card.name + " this is the card");
+    
+    if (!(card.name)) {
       console.log("no card, write siteFile");
       writesiteFile(curSiteKey); //Save to file
-      return;
+
       // var count = cardQuizCount(); //
       if (count) {
         getUserInput("Done. Hit enter to repeat " + count + " sites graded 3 or lower, or type exit to finish", startStopQuiz);
@@ -290,25 +303,40 @@ function getNextCard(card) {
     //Javascript objects have attributes. var card = {nextDate: 0}
     //DEBUG THIS
    //----------------------------
+
     if (!card.nextDate) { card.nextDate = today; console.log(card.nextDate); }
     if (!card.prevDate) { card.prevDate = today; }
     if (!card.interval) { card.interval = 0; }
     if (!card.reps) {  card.reps = 0; }
     if (!card.EF) { card.EF = 2.5; }
+    if (!card.thisDate) {card.thisDate = 0; }
 
     //----------------------------
     console.log("Setting defaults");
 
     // var nextDate = new Date(card.nextDate); //convert to comparable date type
     var nextDate = card.nextDate; //convert to comparable date type
-
+    var thisDate = card.thisDate
+    console.log(nextDate + " next");
+    console.log(today + " today");
     // console.log(nextDate + " the next Date");
-    if (nextDate <= today) {
+    if (nextDate <= thisDate) {
+      console.log("nextDate is less than today");
       quizCard(card);
     } else {
-      cardCounter++;
-      console.log(cardCounter);
+      cardCounter++; 
+      console.log(cardCounter + " cardCounter for today");
+
+      if (cardCounter >= todaySiteCountTotal){
+        console.log("End of sites here");
+        console.log(curSiteKey + " This is the site key");
+        writesiteFile(curSiteKey); //Save to file
+        return;      }
+
+
+
       console.log("Update cardCounter");
+      console.log("sites [cardCounter] " + sites[cardCounter].name);
       getNextCard(sites[cardCounter]);
     }
 }
@@ -341,7 +369,14 @@ function updateCard(line, card) {
   if (grade <= 5 && grade >= 0) {
     calcIntervalEF(card, grade);
     cardCounter++;
-    getNextCard(newSiteObjArr[cardCounter]);
+    console.log(todaySiteCountTotal + " LASDKALSDKA  " + cardCounter)
+    if (cardCounter >= todaySiteCountTotal){
+      console.log("End of sites here");
+      writesiteFile(curSiteKey); //Save to file
+      return;
+    } else {
+      getNextCard(newSiteObjArr[cardCounter]);
+    }
 
   } else { //Bad input
     getUserInput("Please enter 0-5 for... " + card.side2 + ": ", updateCard, card);
@@ -357,9 +392,12 @@ function updateCard(line, card) {
 */
 function calcIntervalEF(card, grade) {
   var oldEF = card.EF,
-      newEF = 0,
+      newEF = 0;
       // nextDate = new Date(today);
-      nextDate = today; 
+
+  console.log(card.nextDate + " The next date of card " + card.name);
+  card.nextDate = card.thisDate; 
+
 
 
   if (grade >= 0 && grade <=5){ //Dont repeat based on the grade
@@ -385,9 +423,123 @@ function calcIntervalEF(card, grade) {
     }
   }
 
-  nextDate = today + card.interval;
-  card.nextDate = nextDate;
+  card.nextDate = card.thisDate + card.interval;
+  // card.nextDate = nextDate;
 }
+
+
+/* 
+Asychronous version of readFile
+
+@method checkExists
+@param {String} fileName
+@return {Boolean} true or false
+
+*/
+
+
+
+var checkExists = function(fileName){
+    var exists = false;
+    try {
+        var contentSync = JSON.parse(fs.readFileSync(fileName));
+        exists = true;
+    } catch (err) {
+        // console.error(err);
+        console.log("This is an error");
+    }
+    // console.log(exists);
+    return exists;
+}
+
+
+
+/*
+  reads the file and parses JSON file into js readable variable.
+  Stores the variable 
+
+  @pmethod readsiteFile
+  @param {String} file
+  @return {Object} variable dictionary of JSON. 
+
+*/
+function readsiteFile(file) {
+
+
+  try{
+    var exists = checkExists(file);
+    // console.log("Exists");
+    if (file == siteFile){
+      console.log("starting startTopicFile");
+      startTopicFile(siteFile);
+
+    } else { //Not the main topic file
+      if (exists == true){
+        //Subject already has spacedRep parameters
+        sites = JSON.parse(fs.readFileSync(file));
+        return sites
+      } else {
+        //No spaced repitition parameters
+        //Create a new JSON file
+        console.log("No existing JSON ");
+      }
+    }
+
+  } catch (err){
+    console.error(err);
+    console.log("Caught an error");
+  }
+
+
+  //---------------------------------------
+
+  // fs.readFileSync(file, function(err, data) { //Changed to readFileSync
+  //   if (err) throw err;
+
+  //   var exists = checkExists(file);
+
+  //   if (file == siteFile){
+  //     startTopicFile(siteFile);
+  //   } else{ //Not the main topic file
+  //     if (exists == true){
+  //       //Subject already has spacedRep parameters
+  //       sites = JSON.parse(data);
+  //       return sites;
+  //     } else {
+  //       //No spaced Repitition happened here
+  //       //Create new JSON file. 
+  //       console.log("No existing JSON spacedRep data");
+  //       console.log("It actually should never come here");
+  //       return;
+  //     }
+  //   }
+
+    //---------------------------------------
+
+    // topicDict = JSON.parse(data);
+    // //Possibily Split this into a new function
+    // //Count the number of topics
+    // // console.log(Object.keys(topicDict));
+    // var subjects = Object.keys(topicDict); //Number of subjects
+    // var subCount = subjects.length; //Subject Count
+    // // console.log(subCount);
+
+
+    // if (subCount) {
+    //   console.log("There are " + subCount + " site topics you can pick");
+    //   console.log("Here are the options: ");
+    //   console.log(subjects);
+    //   getUserInput("Pick a topic... ", pickTopic)
+    // } else {
+    //   console.log("Error or something");
+    // }
+
+  // });
+}
+
+readsiteFile(siteFile);
+
+
 
 
 /*
