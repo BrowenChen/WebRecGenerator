@@ -304,8 +304,8 @@ function getNextCard(card) {
     //DEBUG THIS
    //----------------------------
 
-    if (!card.nextDate) { card.nextDate = today; console.log(card.nextDate); }
-    if (!card.prevDate) { card.prevDate = today; }
+    if (!card.nextDate) { card.nextDate = 0; console.log(card.nextDate); }
+    if (!card.prevDate) { card.prevDate = 0; }
     if (!card.interval) { card.interval = 0; }
     if (!card.reps) {  card.reps = 0; }
     if (!card.EF) { card.EF = 2.5; }
@@ -319,6 +319,7 @@ function getNextCard(card) {
     var thisDate = card.thisDate
     console.log(nextDate + " next");
     console.log(today + " today");
+    card.thisDate++;
     // console.log(nextDate + " the next Date");
     if (nextDate <= thisDate) {
       console.log("nextDate is less than today");
@@ -339,6 +340,8 @@ function getNextCard(card) {
       console.log("sites [cardCounter] " + sites[cardCounter].name);
       getNextCard(sites[cardCounter]);
     }
+
+
 }
 
 /*
@@ -409,6 +412,7 @@ function calcIntervalEF(card, grade) {
     }
 
     card.reps = card.reps + 1;
+
 
     switch (card.reps) {
       case 1:
