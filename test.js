@@ -1,18 +1,62 @@
 //Obj 2) Need to test if JSON file is existing. If not existing, 
 //Create new. If existing, use previous JSON data.
+
+//Function file exists checker
+
 var path = require('path'); 
+var fs = require('fs');
+
+// path.exists('sp.json', function(exists) { 
+//   if (exists) { 
+//     // do something 
+//     console.log("This exists");
+//   } else {
+//     console.log("This doesn't exist, making new file");
+
+//   }
+// }); 
+
+/*
+    Method checks if file exists or not
+
+    @method checkExists
+    @param {String} filename
+    @return {Boolean} True or False
+
+*/
+
+var tempExist = 0;
+
+var contentsSync = fs.readFileSync('sites.json').toString();
+console.log(contentsSync);
+
+var contents = fs.readFile('sites.json', function(err, data){
+    if (err) throw err;
+
+});
+console.log(contents);
 
 
-path.exists('sites.json', function(exists) { 
-  if (exists) { 
-    // do something 
-    console.log("This exists");
-  } else {
-    console.log("This doesn't exist");
-  }
-}); 
+var checkExists = function(file){
+    path.exists(file, function(exists) { 
+      if (exists) { 
+        // do something 
+        console.log("This exists");
+        tempExist = true;
+      } else {
+        console.log("This doesn't exist, making new file");
+        tempExist = false;
+      }
+    }); 
+}
 
 
+checkExists("sites.json");
+checkExists("no.json");
+console.log(tempExist);
+console.log(tempExist);
+
+//There is a synchronous error
 
 
 

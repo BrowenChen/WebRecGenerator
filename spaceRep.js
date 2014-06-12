@@ -44,6 +44,10 @@
   -Implement checkFileExists
   -Add in Date Functionality
 
+  Bug:
+
+  ***Javascript runs asynchronous and synchronous code!!!!!!!!!!
+
 **/
 
 var fs = require('fs');
@@ -272,8 +276,8 @@ function getNextCard(card) {
     if (!card) {
       console.log("no card, write siteFile");
       writesiteFile(curSiteKey); //Save to file
-
-      var count = cardQuizCount(); //
+      return;
+      // var count = cardQuizCount(); //
       if (count) {
         getUserInput("Done. Hit enter to repeat " + count + " sites graded 3 or lower, or type exit to finish", startStopQuiz);
       } else {

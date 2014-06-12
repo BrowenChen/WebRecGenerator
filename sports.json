@@ -37,7 +37,7 @@
     "prevDate": 0,
     "interval": 1,
     "reps": 1,
-    "EF": 2.5
+    "EF": 1.96
   },
   {
     "name": "http://sportsillustrated.cnn.com/",
@@ -45,6 +45,6 @@
     "prevDate": 0,
     "interval": 1,
     "reps": 1,
-    "EF": 2.36
+    "EF": 1.7000000000000002
   }
 ]
