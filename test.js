@@ -35,6 +35,38 @@ var checkExists = function(fileName){
 console.log(checkExists(fileName));
 
 
+/*
+Asynchronous readFileSync. Changed from the normal readFile
+
+@method 
+@param
+@returns
+
+*/
+var sites = 0;
+var thisName = 'sports.json';
+
+var readSiteFile = function(file){
+    try{
+        var exists = checkExists(file);
+        if (exists == true){
+
+            sites = JSON.parse(fs.readFileSync(file));
+
+        } else {
+            console.log("No existing JSON Spaced Rep");
+
+        }
+
+    } catch (err){
+        console.error(err);
+    }
+}
+
+readSiteFile(thisName)
+console.log(sites);
+
+
 
 
 
