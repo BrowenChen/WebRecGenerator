@@ -6,6 +6,38 @@
 var path = require('path'); 
 var fs = require('fs');
 
+
+/* 
+Asychronous version of readFile
+
+@method checkExists
+@param fileName
+@return true or false
+
+*/
+
+var fileName = 'sites.json';
+
+var checkExists = function(fileName){
+    var exists = false;
+    try {
+        var contentSync = JSON.parse(fs.readFileSync(fileName));
+        exists = true;
+    } catch (err) {
+        // console.error(err);
+        console.log("This is an error");
+    }
+    // console.log(exists);
+    return exists;
+}
+
+
+console.log(checkExists(fileName));
+
+
+
+
+
 // path.exists('sp.json', function(exists) { 
 //   if (exists) { 
 //     // do something 
@@ -27,34 +59,33 @@ var fs = require('fs');
 
 var tempExist = 0;
 
-var contentsSync = fs.readFileSync('sites.json').toString();
-console.log(contentsSync);
-
-var contents = fs.readFile('sites.json', function(err, data){
-    if (err) throw err;
-
-});
-console.log(contents);
 
 
-var checkExists = function(file){
-    path.exists(file, function(exists) { 
-      if (exists) { 
-        // do something 
-        console.log("This exists");
-        tempExist = true;
-      } else {
-        console.log("This doesn't exist, making new file");
-        tempExist = false;
-      }
-    }); 
-}
+
+// var contents = fs.readFile('sites.json', function(err, data){
+//     if (err) throw err;
+// });
+// console.log(contents);
 
 
-checkExists("sites.json");
-checkExists("no.json");
-console.log(tempExist);
-console.log(tempExist);
+// var checkExists = function(file){
+//     path.exists(file, function(exists) { 
+//       if (exists) { 
+//         // do something 
+//         console.log("This exists");
+//         tempExist = true;
+//       } else {
+//         console.log("This doesn't exist, making new file");
+//         tempExist = false;
+//       }
+//     }); 
+// }
+
+
+// checkExists("sites.json");
+// checkExists("no.json");
+// console.log(tempExist);
+// console.log(tempExist);
 
 //There is a synchronous error
 
